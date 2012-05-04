@@ -8,6 +8,21 @@ body {
     background-image: radial-gradient(center top, circle closest-corner, #FFFFFF 30%, #E6EBED 100%);
 }
 
+.leftlogo {
+    width: 128px;
+    height: 168px;
+    margin: 0px auto;
+    position: fixed;
+    top: -168px;
+    background: url(../img/logo-left.png) center top no-repeat transparent;
+}
+::-moz-selection{background:#057FDE;color:white;text-shadow: 0px -1px #034679;}
+::selection{background:#057FDE;color:white;text-shadow: 0px -1px #034679;}
+
+a::-moz-selection{background:#057FDE;color:white;text-shadow: 0px -1px #034679;}
+a::selection{background:#057FDE;color:white;text-shadow: 0px -1px #034679;}
+
+
 .block {
     background: white;
     border: 1px solid #4d4d4d;
@@ -18,11 +33,58 @@ body {
     box-shadow: 0px 2px 0px -1px #4d4d4d;
     padding: 20px;
     margin-bottom: 20px;
+}
 
+.block p, .block li {
+    color:#444;
+    font-family:Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 18pt;
+    margin: 10px 0px;
+}
+
+footer {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #888;
+}
+
+span.backtick {
+    font-family: Menlo,Monaco,"Courier New",monospace;
+    border: 1px solid rgba(0, 0, 0, 0.148438);
+    background-color: whiteSmoke;
+    font-size: 12px;
+    padding: 2px 5px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    color: #333;
+}
+
+h1, h2, h3 {
+    margin: 0px 0px 20px 0px;
+}
+h3 {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.148438);
+    margin-top: 20px;
+}
+blockquote {
+    margin: 20px 60px 20px 0px;
+}
+blockquote pre {
+    margin: 10px 0px;
+}
+blockquote pre, blockquote .backtick {
+    color: #666;
+    background: #fafafa;
+}
+blockquote p{
+    color: #888;
+    font-size: 11pt;
 }
 
 .logo .span10 {
-    background: url(../img/knyfe-logo.png) center top no-repeat transparent;
+    text-align: center;
     height: 180px;
 }
 
