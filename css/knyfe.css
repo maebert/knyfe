@@ -8,14 +8,6 @@ body {
     background-image: radial-gradient(center top, circle closest-corner, #FFFFFF 30%, #E6EBED 100%);
 }
 
-.leftlogo {
-    width: 128px;
-    height: 168px;
-    margin: 0px auto;
-    position: fixed;
-    top: -168px;
-    background: url(../img/logo-left.png) center top no-repeat transparent;
-}
 ::-moz-selection{background:#057FDE;color:white;text-shadow: 0px -1px #034679;}
 ::selection{background:#057FDE;color:white;text-shadow: 0px -1px #034679;}
 
@@ -85,7 +77,7 @@ blockquote p{
 
 .logo .span10 {
     text-align: center;
-    height: 180px;
+    height: 280px;
 }
 
 .logo .span2 {
