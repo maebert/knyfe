@@ -166,7 +166,7 @@ class Data:
          - 'xlsx' for Excel 07 or newer
          - 'xls' for legacy Excel
          - 'ods' for open document spreadsheet
-         = 'html' for an html file
+         - 'html' for an html file
          """
         modes = {
             'xlsx' : 'wb', 'xls' : 'wb', 'ods' : 'wb',
@@ -190,12 +190,12 @@ class Data:
         tab = tablib.Dataset()
         tab._set_dict(new_data)
 
-
         if not filename.endswith(format):
             filename += "." + format
         with open(filename, modes[format]) as f:
             f.write(getattr(tab, format))
             self.log.info("Saved to %s" % filename)
+
 
     def __len__(self):
         return len(self.data)
@@ -206,7 +206,7 @@ class Data:
 
     def get(self, attribute):
         """Gets all values of an attribute across all samples."""
-        return np.asarray([date[attribute] for date in self.data])
+        return np.asarray([date[attribute] for date in self.data if attribute in date])
 
 
     def get_once(self, attribute, check_unique = True):
@@ -286,9 +286,9 @@ class Data:
             return reduce(lambda b1, b2: b1 and b2, boollist)
         def _condition(c, v):
             if type(v) in (list, tuple, np.ndarray):
-                return lambda data: data[c] in v
+                return lambda data: c in data and data[c] in v
             else:
-                return lambda data: data[c] == v
+                return lambda data: c in data and data[c] == v
 
         if _func and callable(_func):
             return self._new([trial for trial in self.data if _func(trial)]).filter(**kwargs)
