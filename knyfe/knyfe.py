@@ -4,11 +4,13 @@
 import numpy  as np
 import sys
 import cPickle
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 import logging
 import random
-import perm_test
-from scipy import stats
+import tablib
 
 class Data:
     """A generic data manager for exploring generic datasets.
@@ -105,52 +107,6 @@ class Data:
         self.dependent = self._np1d(variables)
 
 
-    def _signed_rank(self, values):
-        """Returns the signed rank of a list of values"""
-        lambda_signs = np.vectorize(lambda num: 1 if num >= 0 else -1)
-        signs = lambda_signs(values)
-        ranks = np.round(stats.rankdata(np.abs(values))).astype(int)
-        return signs*ranks
-
-    def signed_rank(self, attribute):
-        """Returns the signed ranks of the data of the given attribute"""
-        values = self.get(attribute)
-        return self._signed_rank(values)
-
-    def _rank(self, values):
-        """Returns the ranks of the data of a list of values"""
-        ranks = np.round(stats.rankdata(values)).astype(int)
-        return ranks
-
-    def rank(self, attribute):
-        """Returns the ranks of the data of the given attribute"""
-        values = self.get(attribute)        
-        return self._rank(values)
-
-    def _progress_bar(self, max=100, label=""):
-        class Progress:
-            def __init__(self, max=100, label=""):
-                self.value = 1
-                self.label = label
-                self.max = max
-
-            def set(self, value):
-                self.value = value
-                p50 = int(50.0 * value / self.max)
-                if value >= self.max:
-                    self.clear()
-                else:
-                    sys.stdout.write("\r" + "|"*p50 + "\033[30m" + "·"*(50-p50) + "\033[0m %02d%% %s" % (p50*2, self.label))
-                    sys.stdout.flush()
-            def advance(self):
-                self.set(self.value + 1)
-
-            def clear(self):
-                sys.stdout.write("\r"+" "*(80 + len(self.label))+"\r")
-                sys.stdout.flush()
-        return Progress(max, label)
-
-
     def label(self, label=None):
         if not label:
             return self.str_label
@@ -171,31 +127,6 @@ class Data:
     def _one_sample_perm(self, data, ranked):
         pass
 
-    def permutation_test(self, other, variables=None, ranked=False, two_samples=False, limit=1000):
-        """Performs a permutation test on the given or the default dependent variables.
-        If two_samples is True, will conduct a two-sample test. Otherwise a one-sample test will be conducted.
-        If ranked is True, a Wilcoxon / Wilcoxon-Mann-Whitney test will be used for the one-sample /
-        two-sample case, respectively. Otherwise a Fisher / Pitman test will be conducted."""        
-        variables = self._np1d(variables, fallback = self.dependent)
-
-        for var in variables:
-            A = self.get(var)
-            B = other.get(var)
-
-            if not two_samples:
-                D = [a - b for a, b in zip(A, B)]
-                if ranked:
-                    D = self._signed_rank(D)
-                result = perm_test.one_sample(D, progress_bar = self._progress_bar(), limit=limit)
-            else:
-                if ranked:
-                    D = self._rank(np.concatenate((A, B)))                   
-                    A, B = D[:len(A)], D[len(A):]
-                result = perm_test.two_sample(A, B, progress_bar = self._progress_bar(), limit=limit)
-        return result
-
-
-
     def map(self, attribute, new_attribute, function):
         """Creates a new attribute in each sample by mapping an existing one using the given function. 
         knyfe.map('age', 'life_expectancy', lambda age: 82 - age)
@@ -203,74 +134,12 @@ class Data:
         for sample in self.data:
             sample[new_attribute] = function(sample[old_attribute])
 
-    def _permutation_test(self, other, variables=None, permutations=10, tail=0):
-        variables = self._np1d(variables, fallback = self.dependent)
-
-        px = self._progress_bar(100)
-
-        samples = len(self) + len(other)
-
-        exact = False
-        if permutations is 'all' or (permutations >= 2**samples - 1):
-            exact = True
-            permutations = 2**samples - 1
-
-        print "permutations: ", permutations
-
-
-        def _all_perms(ndim):
-            nperms = 2**ndim
-            perms = np.empty((nperms, ndim), int)
-            perms.fill(-1)
-            half_point = nperms / 2
-            perms[half_point:, 0] = 1
-            for j in range(1, ndim):
-                half_col = perms[::2, j-1]
-                perms[:half_point, j] = half_col
-                perms[half_point:, j] = half_col
-            return perms
-
-        if exact:
-            perms = _all_perms(samples)
-        else:
-            perms = np.sign(0.5 - np.random.rand(permutations, samples))
-
-        for var in variables:
-            A = self.get(var)
-            B = other.get(var)
-            X = np.array([A, B]).transpose()
-
-            X2 = np.array([np.mean(A**2), np.mean(B**2)])
-            mu0 = np.array([np.mean(A), np.mean(B)])
-            dof_scaling = np.sqrt(samples / (samples - 1.0))
-            std0 = np.sqrt(X2 - mu0**2) * dof_scaling # variance splitting
-            T0 = mu0 / (std0 / np.sqrt(samples))
-
-
-        #     mus = np.dot(perms, X) / float(n_samples)
-        #     stds = np.sqrt(X2[None,:] - mus**2) * dof_scaling # std with splitting
-        #     max_abs = np.max(np.abs(mus) / (stds / sqrt(n_samples)), axis=1) # t-max
-        #     H0 = np.sort(max_abs)
-
-        #     scaling = float(n_permutations + 1)
-
-        #     if tail == 0:
-        #         p_values = 1.0 - np.searchsorted(H0, np.abs(T0)) / scaling
-        #     elif tail == 1:
-        #         p_values = 1.0 - np.searchsorted(H0, T0) / scaling
-        #     elif tail == -1:
-        #         p_values = 1.0 - np.searchsorted(H0, -T0) / scaling
-
-        #     return p_values, T0, H0
-
-
     def extend(self, other_data):
         """Appends a different Data object or list of data samples to self.data"""
         if type(other_data) is list:
             self.data.extend(other_data)
         elif hasattr(other_data, 'data'):
             self.data.extend(other_data.data)
-
 
     def load(self, *filenames):
         """Opens specified files using the standard protocol (json by default)
@@ -281,6 +150,10 @@ class Data:
             data_file.close()
             self.data.extend(subject_data)
 
+    def save(self, filename):
+        """Saves the current dataset as JSON to the given filename."""
+        with open(filename) as f:
+            json.dump(self.data, f, indent=2)
 
     def __len__(self):
         return len(self.data)
