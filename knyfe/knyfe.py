@@ -3,6 +3,7 @@
 
 import numpy  as np
 import sys
+import os
 import cPickle
 try:
     import simplejson as json
@@ -10,6 +11,7 @@ except ImportError:
     import json
 import logging
 import random
+import copy
 import tablib
 
 class Data:
@@ -100,12 +102,13 @@ class Data:
 
 
     def _new(self, data=[]):
+        """Creates an empty dataset, copying over dependent varuables and label from the current dataset"""
         return self.__class__(data, dependent=self.dependent, use_json = self.use_json, label=self.label()+"*")
 
 
     def set_dependent(self, *variables):
         self.dependent = self._np1d(variables)
-
+        return self
 
     def label(self, label=None):
         if not label:
@@ -154,6 +157,45 @@ class Data:
         """Saves the current dataset as JSON to the given filename."""
         with open(filename) as f:
             json.dump(self.data, f, indent=2)
+
+    def export(self, filename, format=None):
+        """Exports the current dataset.
+        Format from export will be guessed from file extension, or can be specified explicitly.
+        Format may be
+         - 'csv' for comma separated value
+         - 'xlsx' for Excel 07 or newer
+         - 'xls' for legacy Excel
+         - 'ods' for open document spreadsheet
+         = 'html' for an html file
+         """
+        modes = {
+            'xlsx' : 'wb', 'xls' : 'wb', 'ods' : 'wb',
+            'html': 'w', 'csv': 'w'
+        }
+
+        if not format:
+            name, ext = os.path.splitext(filename)
+            format = ext[1:]
+
+        if not format in modes:
+            self.log.warn("Invalid export format '%s'. Valid options are csv, xlsx, xls, ods and html." % format)
+            return
+
+        # Prepare a tablib object for exporting
+        self._scales() # Get all attributes present
+        all_keys = self.scales.keys()
+        new_data = [dict.fromkeys(all_keys, None) for i in xrange(len(self))]
+        for i, d in enumerate(self.data):
+            new_data[i].update(d)    
+        tab = tablib.Dataset()
+        tab._set_dict(new_data)
+
+
+        if not filename.endswith(format):
+            filename += "." + format
+        with open(filename, modes[format]) as f:
+            f.write(getattr(tab, format))
+            self.log.info("Saved to %s" % filename)
 
     def __len__(self):
         return len(self.data)
