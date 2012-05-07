@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+    knyfe
+
+    copyright (c) 2011-2012 by Manuel Ebert.
+    license: MIT, see LICENSE for more details.
+"""
+
 import numpy  as np
 import sys
 import os
@@ -14,70 +21,15 @@ import random
 import copy
 import tablib
 
+__title__ = 'knyfe'
+__version__ = '0.4.0'
+__build__ = 0x000911
+__author__ = 'Manuel Ebert'
+__license__ = 'MIT'
+__copyright__ = 'Copyright 2011-2012 Manuel Ebert'
+
 class Data:
-    """A generic data manager for exploring generic datasets.
-
-    A dataset is simply a list of data samples, and samples are nothing but
-    key-value pairs, or dictionaries. This class is a wrapper that allows you
-    to rapidly interact with these kind of data sets.
-
-    Storing your datasets as lists of key-value pairs has the advantage that we
-    can save them as JSON, or put them into a MongoDB. Let's assume we've got a
-    JSON object in the file mydata.json that looks roughly like this:
-
-      [
-        {
-          name: "Jeanne D'Arc",
-          gender: "female",
-          continent: "Europe",
-          age: '19'
-        },
-        {
-
-        }
-      ]
-
-    - we can construct a Data object like this:
-
-      data = Data("mydata.json")
-
-    Now let's play around a bit:
-
-      data = data.filter(gender='male', continent=('Europe', 'Asia')).get('age')
-
-    Will return a numpy array containing the ages of all dudes living in Europe
-    or Asia. Notice the method chaining; filter (and other methods like it) will
-    always return a new Data object. Want some statistics:
-
-      data.filter(lambda d: squeeze(d) == "quiek").mean('size', 'weight')
-
-    gives you the mean size and weight of all samples that make "quiek" when
-    squeezed (ie. all key-value-pairs that return "quiek" when passed to the
-    squeeze function). If we're often interested in the same variables, we can set
-
-        data.set_dependent('size', 'weight')
-
-    and now just call data.mean() to get the mean size and weight.
-
-    But hey, let's get serious and run a proper test:
-
-        data.set_dependent('awesomeness')
-        ninjas = data.filter(job='ninja').remove_outliers()
-        pirates = data.filter(job='pirate').remove_outliers()
-        ninja.permutation_test(pirates)
-
-    Will first construct datasets with only ninjas and pirates, respectively,
-    remove the super awesome and super lame from each group, and then run a
-    permutation test to see whether the dependent variable (awesomeness) is
-    significantly different in these two groups. The great thing about 
-    permutation tests is that you need to know almost nothing about your 
-    distribution. It's the most take-no-prisoners kind of statistical test there
-    is. And it will give you a p value. Less is more. e.g. a p-value of 0.04 will
-    tell you that there's a 96%% chance that these groups really differ in
-    awesomeness and it's not just random fluctuation that makes for different mean
-    values.
-
-    """
+    """A generic data manager for exploring generic datasets."""
     logging.basicConfig(format="%(levelname)-7s %(asctime)s:  %(message)s", level=logging.INFO)
     log = logging.getLogger("Data Analysis")
     
@@ -127,8 +79,6 @@ class Data:
             anything = [anything]
         return np.asarray(anything)
 
-    def _one_sample_perm(self, data, ranked):
-        pass
 
     def map(self, attribute, new_attribute, function):
         """Creates a new attribute in each sample by mapping an existing one using the given function. 
@@ -182,11 +132,11 @@ class Data:
             return
 
         # Prepare a tablib object for exporting
-        self._scales() # Get all attributes present
-        all_keys = self.scales.keys()
-        new_data = [dict.fromkeys(all_keys, None) for i in xrange(len(self))]
-        for i, d in enumerate(self.data):
-            new_data[i].update(d)    
+        all_keys = set(key for d in self.data for key in d)
+        new_data = copy.deepcopy(self.data)
+        for sample in new_data:
+            sample.update((k,None) for k in all_keys - sample.viewkeys())
+        
         tab = tablib.Dataset()
         tab._set_dict(new_data)
 
@@ -203,6 +153,7 @@ class Data:
 
     def __repr__(self):
         return "%s (%d samples)" % (self.label(), len(self))
+
 
     def get(self, attribute):
         """Gets all values of an attribute across all samples."""
