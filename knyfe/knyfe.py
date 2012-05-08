@@ -11,7 +11,6 @@
 import numpy  as np
 import sys
 import os
-import cPickle
 try:
     import simplejson as json
 except ImportError:
@@ -40,29 +39,53 @@ class Data:
     ARRAY = 3       # For tuples, lists, np.arrays of fixed length across dataset
     FLEX_ARRAY = 4  # For tuples, lists, np.arrays of flexible length across dataset
 
-    def __init__(self, data=[], label="Unnamed Dataset", use_json=True, dependent=[]):
-        if type(data) is str:
-            self.load(data)
-        elif type(data) in (list, tuple):
-            self.data = data
-        else:
-            self.data = []
-        self.str_label = label
-        self.use_json = use_json
-        self.pickle = json if use_json else cPickle
-        self.dependent = self._np1d(dependent)
+    def __init__(self, *sources):
+        """ Constructs a new Dataset from given sources. Sources may be:
+        * Strings, interpreted as paths to JSON files
+        * dictionaries, interpreted as single samples
+        * lists of dictionaries
+        * other Data instances
+        Or any combination of the above. The resulting Dataset will join all the sources.
+        """
+        self.data = []
+        for source in sources:
+            if type(source) is str:
+                self.load(source)
+            elif type(source) is dict:
+                self.data.append(source)
+            elif type(source) in (list, tuple):
+                self.data.extend(source)
+            elif isinstance(source, self.__class__):
+                self.data.extend(source.data)
+            elif hasattr(source, 'data') and type(source.data) is list:
+                # Wild guess here, but may be useful for subclassing
+                self.data.extend(source.data)
+            else:
+                self.log.error("Can't interpret source {}".format(source))
+
+        self.str_label = "Unnamed Dataset"
+        self.dependent = self._np1d([])
 
 
     def _new(self, data=[]):
         """Creates an empty dataset, copying over dependent varuables and label from the current dataset"""
-        return self.__class__(data, dependent=self.dependent, use_json = self.use_json, label=self.label()+"*")
+        return self.__class__(data).dependent_vars(self.dependent).label(self.label()+"*")
 
 
-    def set_dependent(self, *variables):
-        self.dependent = self._np1d(variables)
-        return self
+    def dependent_vars(self, *variables):
+        """Sets or returns the dependent variables of the dataset.
+        Use Data.depentend(None) to clear all dependent variables."""
+        if not variables:
+            return self.dependent
+        else:
+            if not variables[0]:
+                self.dependent = self._np1d([])
+            else:
+                self.dependent = self._np1d(variables)
+            return self
 
     def label(self, label=None):
+        """Sets or returns the label of the dataset."""
         if not label:
             return self.str_label
         else:
@@ -95,18 +118,15 @@ class Data:
             self.data.extend(other_data.data)
 
     def load(self, *filenames):
-        """Opens specified files using the standard protocol (json by default)
-        and loads their data into self.data"""
+        """Opens specified files and loads their data into self.data"""
         for filename in filenames:
-            data_file = open(filename)
-            subject_data = self.pickle.load(data_file)
-            data_file.close()
-            self.data.extend(subject_data)
+            with open(filename) as data_file:
+                self.data.extend(json.load(data_file))
 
     def save(self, filename):
         """Saves the current dataset as JSON to the given filename."""
-        with open(filename) as f:
-            json.dump(self.data, f, indent=2)
+        with open(filename, 'w') as data_file:
+            json.dump(self.data, data_file, indent=2)
 
     def export(self, filename, format=None):
         """Exports the current dataset.
