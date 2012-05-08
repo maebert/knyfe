@@ -152,7 +152,7 @@ class Data:
 
 
     def __repr__(self):
-        return "%s (%d samples)" % (self.label(), len(self))
+        return "<%s (%d samples)>" % (self.label(), len(self))
 
 
     def get(self, attribute):
@@ -349,31 +349,39 @@ class Data:
                     'std': np.asarray(values).std()
                 }
 
+    def _meta_info(self, attr):
+        if self.scales[attr] is Data.NOMINAL:
+            values = self.meta[attr]['values']
+            if len(values) > 6:
+                values = values[:6]
+                values.append("...")
+            return "[{0}]".format(", ".join(values))
+        elif self.scales[attr] is Data.ORDINAL:
+            if self.meta[attr]['min'] is self.meta[attr]['max']:
+                return "{min}".format(**self.meta[attr])
+            else:
+                return "{min} - {max}".format(**self.meta[attr])
+        elif self.scales[attr] is Data.CARDINAL:
+            return "{min:.2f} - {max:.2f}  [{mean:.2f} +- {std:.2f}]".format(**self.meta[attr])
+        elif self.scales[attr] is Data.FLEX_ARRAY:
+            return "ARRAY [{min} - {max} elements]".format(**self.meta[attr])
+        elif self.scales[attr] is Data.ARRAY:
+            return "ARRAY"
 
-    def print_summary(self):
-        """Prints a summary of the data set."""
+    @property
+    def summary(self):
+        """Returns a summary of the data set as a string."""
         self._meta()
-        print "%s (%d samples)" %(self.label(), len(self))
-        print "-"*60
-        for attr in self.scales:
-            attrname = "* "+attr if attr in self.dependent else "  "+attr
-            if self.scales[attr] is Data.NOMINAL:
-                values = self.meta[attr]['values']
-                if len(values) > 6:
-                    values = values[:6]
-                    values.append("...")
-                desc = "[%s]" % ", ".join(values)
-            elif self.scales[attr] is Data.ORDINAL:
-                desc = "%(min)d - %(max)d" % (self.meta[attr])
-            elif self.scales[attr] is Data.CARDINAL:
-                desc = "%(mean).2f +- %(std).2f [%(min)0.2f - %(max)0.2f]" % (self.meta[attr])
-            elif self.scales[attr] is Data.FLEX_ARRAY:
-                desc = "ARRAY [%(min)d - %(max)d elements]" % (self.meta[attr])
-            elif self.scales[attr] is Data.ARRAY:
-                desc = "ARRAY"
-            print "%-20s: %s" %(attrname, desc)
-        print "="*60
+        summary = "{0} ({1} samples)".format(self.label(), len(self))
+        if len(self) == 0:
+            return summary
 
+        summary += "\n" + "'"*60
+        max_attr_len = max(len(attr) for attr in self.scales) + 1
+        for attr in self.scales:
+            summary += "\n{0:{1}}: {2}".format(attr+"*"*(attr in self.dependent), max_attr_len, self._meta_info(attr)) 
+        summary += "\n" + "="*60
+        return summary
 
 if __name__ == "__main__":
     A = [51.2,46.5,24.1,10.2,65.3,92.1,30.3,49.2]#,16.4,14.1,13.4,15.4,14.0,11.3]
