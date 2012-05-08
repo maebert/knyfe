@@ -341,26 +341,43 @@ class Data:
         self.meta = {}
         # Now, go through data and compute some statistics, dependent on data type
         for attr in self.scales.keys():
-            values = [sample[attr] for sample in self.data]
+            values = [sample[attr] for sample in self.data if attr in sample]
+            summary = ""
+            notes = ""
+            warnings = ""
             if self.scales[attr] is Data.ARRAY:
                 array_lengths = set(len(data) for data in values)
                 if len(array_lengths) is 1:
-                    pass # TODO: deal with  arrays
+                    self.meta[attr] = {
+                        'len': min(array_lengths),
+                    }
+                    summary = "ARRAY"
+                    notes = "Length: {len}"
                 else:
                     self.scales[attr] = Data.FLEX_ARRAY
                     self.meta[attr] = {
-                        'min': min(array_lengths),
-                        'max': max(array_lengths)
+                        'minlen': min(array_lengths),
+                        'maxlen': max(array_lengths)
                     }
+                    summary = "ARRAY"
+                    notes = "Lengths: {minlen} - {maxlen}"
             elif self.scales[attr] is Data.NOMINAL:
                 self.meta[attr] = {
                     'values': list(set(values))
                 }
+                print set(values)
+                summary = "[{0}]".format(", ".join(set(values)))
+                if len(summary) > 20:
+                    summary = summary[:16]+"...]"
             elif self.scales[attr] is Data.ORDINAL:
                 self.meta[attr] = {
                     'min': min(values),
                     'max': max(values)
                 }
+                if min(values) is max(values):
+                    summary = "{min}"
+                else:
+                    summary = "{min} - {max}"
             elif self.scales[attr] is Data.CARDINAL:
                 self.meta[attr] = {
                     'min': min(values),
@@ -368,25 +385,18 @@ class Data:
                     'mean': np.asarray(values).mean(),
                     'std': np.asarray(values).std()
                 }
+                summary = "{min:.2f} - {max:.2f}"
+                notes = "Mean: {mean:.2f} +- {std:.2f}"
 
-    def _meta_info(self, attr):
-        if self.scales[attr] is Data.NOMINAL:
-            values = self.meta[attr]['values']
-            if len(values) > 6:
-                values = values[:6]
-                values.append("...")
-            return "[{0}]".format(", ".join(values))
-        elif self.scales[attr] is Data.ORDINAL:
-            if self.meta[attr]['min'] is self.meta[attr]['max']:
-                return "{min}".format(**self.meta[attr])
-            else:
-                return "{min} - {max}".format(**self.meta[attr])
-        elif self.scales[attr] is Data.CARDINAL:
-            return "{min:.2f} - {max:.2f}  [{mean:.2f} +- {std:.2f}]".format(**self.meta[attr])
-        elif self.scales[attr] is Data.FLEX_ARRAY:
-            return "ARRAY [{min} - {max} elements]".format(**self.meta[attr])
-        elif self.scales[attr] is Data.ARRAY:
-            return "ARRAY"
+            self.meta[attr]['missing'] = len(self) - len(values)
+
+            # Construct a string representation of the meta info
+            summary = summary.format(**self.meta[attr])
+            notes = notes.format(**self.meta[attr])
+            if self.meta[attr]['missing']:
+                warnings = "(missing in {missing} samples)".format(**self.meta[attr])
+
+            self.meta[attr]['summary'] = "{0:20} {1:22} {2}".format(summary, notes, warnings)
 
     @property
     def summary(self):
@@ -396,11 +406,11 @@ class Data:
         if len(self) == 0:
             return summary
 
-        summary += "\n" + "'"*60
+        summary += "\n" + "'"*80
         max_attr_len = max(len(attr) for attr in self.scales) + 1
         for attr in self.scales:
-            summary += "\n{0:{1}}: {2}".format(attr+"*"*(attr in self.dependent), max_attr_len, self._meta_info(attr)) 
-        summary += "\n" + "="*60
+            summary += "\n{0:{1}}: {2}".format(attr+"*"*(attr in self.dependent), max_attr_len, self.meta[attr]['summary']) 
+        summary += "\n" + "="*80
         return summary
 
 if __name__ == "__main__":
