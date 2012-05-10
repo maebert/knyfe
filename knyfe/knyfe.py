@@ -21,8 +21,7 @@ import copy
 import tablib
 
 __title__ = 'knyfe'
-__version__ = '0.4.0'
-__build__ = 0x000911
+__version__ = '0.4.1'
 __author__ = 'Manuel Ebert'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2011-2012 Manuel Ebert'
@@ -415,7 +414,6 @@ class Data:
                 self.meta[attr] = {
                     'values': list(set(values))
                 }
-                print set(values)
                 summary = "[{0}]".format(", ".join(set(values)))
                 if len(summary) > 20:
                     summary = summary[:16]+"...]"
@@ -448,6 +446,7 @@ class Data:
 
             self.meta[attr]['summary'] = "{0:20} {1:22} {2}".format(summary, notes, warnings)
 
+
     @property
     def summary(self):
         """Returns a summary of the data set as a string."""
@@ -463,55 +462,3 @@ class Data:
         summary += "\n" + "="*80
         return summary
 
-if __name__ == "__main__":
-    A = [51.2,46.5,24.1,10.2,65.3,92.1,30.3,49.2]#,16.4,14.1,13.4,15.4,14.0,11.3]
-    B = [45.8,41.3,15.8,11.1,58.5,70.3,31.6,35.4]#,12.6,11.4,13.2,11.2,09.4,12.0]
-    raw_data = [{'group': 'A', 'x': a} for a in A] + [{'group': 'B', 'x': b} for b in B]
-    data = Data(data=raw_data, dependent='x').label("All data")
-    data_a = data.filter(group='A').label("A")
-    data_b = data.filter(group='B').label("B")
-
-    from scipy.misc import comb as bincoef
-    tp = bincoef(len(data_a)*2, len(data_a))
-    #data_a.permutation_test(data_b, ranked=True, two_samples=False)
-    print data_a.permutation_test(data_b, ranked=False, two_samples=True, limit=30)
-#    print data_a.permutation_test(data_b, ranked=False, two_samples=True, limit=2000)
-
-#    r2 = data_a.permutation_test(data_b, ranked=False, two_samples=True, limit=800)
-    # r = []
-    # for x in xrange(1, tp, 100):
-    #     r2 = data_a.permutation_test(data_b, ranked=False, two_samples=True, limit=x)
-    #     r.append(r1[0] - r2[0])
-    # print r
-    
-
-    #print r2
-
-# one-sample
-# [ 0.98828125  0.01953125  0.0390625 ]
-# two-sample
-# [ 0.71313131  0.32268842  0.64537685]
-
-
-    # from random import gauss
-    # raw_data = []
-    # for sample in range(100):
-    #     d = {'subject': sample}
-    #     if sample % 2:
-    #         d['species'] = 'dog'
-    #         d['mischief'] = gauss(20, 5)
-    #         d['stinkyness'] = gauss(60, 14)
-    #         d['teeth'] = (12, 4, 16, 10) # (incisors, premolars, canines, molars)
-    #     else:
-    #         d['species'] = 'cat'
-    #         d['mischief'] = gauss(40, 6)
-    #         d['stinkyness'] = gauss(50, 8)
-    #         d['teeth'] = (12, 4, 10, 4)
-    #     raw_data.append(d)
-
-    # all_data = Data(data=raw_data, dependent='stinkyness', label="Animals")
-    # cats = all_data.filter(species='cat').label('Cats')
-    # dogs = all_data.filter(species='dog').label('Dogs')
-    # dogs.print_summary()
-    # cats.print_summary()
-    # dogs.permutation_test(cats)
