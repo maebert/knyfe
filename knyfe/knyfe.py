@@ -38,6 +38,7 @@ class Data:
     CARDINAL = 2    # For Floats 
     ARRAY = 3       # For tuples, lists, np.arrays of fixed length across dataset
     FLEX_ARRAY = 4  # For tuples, lists, np.arrays of flexible length across dataset
+    UNKNOWN = 98    # For WE DON't KNOW.
 
     def __init__(self, *sources):
         """ Constructs a new Dataset from given sources. Sources may be:
@@ -374,6 +375,8 @@ class Data:
                 return Data.NOMINAL
             elif type(value) in (tuple, list, np.ndarray):
                 return Data.ARRAY
+            else:
+                return Data.UNKOWN
 
         # Algorithm: Run through each sample of dataset
         # Ad each attribute to our scale dict. The scale constants are ordered such
@@ -440,7 +443,7 @@ class Data:
                 summary = "{min:.2f} - {max:.2f}"
                 notes = "Mean: {mean:.2f} +- {std:.2f}"
 
-            self.meta[attr]['missing'] = len(self) - len(values)
+            self.meta[attr]['missing'] = len(self) - len(values) - values.count(None)
 
             # Construct a string representation of the meta info
             summary = summary.format(**self.meta[attr])
