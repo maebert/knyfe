@@ -73,6 +73,9 @@ class Data:
     def __getattr__(self, attr):
         if attr in self.attributes:
             return self.get(attr)
+        else:
+            raise AttributeError
+
 
     def __add__(self, other):
         new_data = self._new()
