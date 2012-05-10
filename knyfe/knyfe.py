@@ -71,6 +71,9 @@ class Data:
         """Creates an empty dataset, copying over dependent varuables and label from the current dataset"""
         return self.__class__(data).dependent_vars(self.dependent).label(self.label()+"*")
 
+    def __getattr__(self, attr):
+        if attr in self.attributes:
+            return self.get(attr)
 
     def __add__(self, other):
         new_data = self._new()
@@ -246,6 +249,9 @@ class Data:
         else:
             return np.asarray([np.mean([self.get(var) for var in variables])])
         
+    @property
+    def attributes(self):
+        return {attr for sample in self.data for attr in sample}
 
     def get_set(self, attribute):
         """Returns a set of all values present in the dataset for a given attribute"""
