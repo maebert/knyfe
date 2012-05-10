@@ -49,7 +49,7 @@ class Data:
         """
         self.data = []
         for source in sources:
-            if type(source) is str:
+            if type(source) in (str, unicode):
                 self.load(source)
             elif type(source) is dict:
                 self.data.append(source)
@@ -368,7 +368,7 @@ class Data:
                 return Data.CARDINAL
             elif type(value) is int:
                 return Data.ORDINAL
-            elif type(value) in (str, bool):
+            elif type(value) in (str, unicode, bool):
                 return Data.NOMINAL
             elif type(value) in (tuple, list, np.ndarray):
                 return Data.ARRAY
