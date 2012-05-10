@@ -18,6 +18,7 @@ except ImportError:
 import logging
 import random
 import copy
+import glob
 import tablib
 
 __title__ = 'knyfe'
@@ -49,7 +50,7 @@ class Data:
         self.data = []
         for source in sources:
             if type(source) in (str, unicode):
-                self.load(source)
+                self.load(*glob.glob(source))
             elif type(source) is dict:
                 self.data.append(source)
             elif type(source) in (list, tuple):
