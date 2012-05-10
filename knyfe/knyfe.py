@@ -254,9 +254,8 @@ class Data:
         return {attr for sample in self.data for attr in sample}
 
     def get_set(self, attribute):
-        """Returns a set of all values present in the dataset for a given attribute"""
-        subjects = set(d['subject'] for d in self.data)
-        return sorted(subjects)
+        """Returns a set of all values present in the dataset for a given attribute"""        
+        return sorted(set(self.get(attribute)))
 
 
     def median_split(self, attribute):
