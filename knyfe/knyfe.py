@@ -72,6 +72,51 @@ class Data:
         return self.__class__(data).dependent_vars(self.dependent).label(self.label()+"*")
 
 
+    def __add__(self, other):
+        new_data = self._new()
+        new_data.label(self._combine_labels(other))
+        # Extend data
+        new_data.data.extend(self.data)
+        if hasattr(other, "data"):
+            new_data.data.extend(other.data)
+        elif type(other) in (list, tuple):
+            new_data.data.extend(other)
+        return new_data
+
+    def __iadd__(self, other):
+        if hasattr(other, "data"):
+            self.data.extend(other.data)
+        elif type(other) in (list, tuple):
+            self.data.extend(other)
+        return self
+
+    def _combine_labels(self, other, template="{self} + {other}"):
+        """Combines the Data's label with another datasets label using a given template.
+        The template should contain {self} and {other} as placeholders."""
+        # Pick a nice label
+        if hasattr(other, "label"):
+            if self.label() == "Unnamed Dataset":
+                return other.label()
+            elif other.label() == "Unnamed Dataset":
+                return self.label()
+            else:
+                return template.format(self=self.label(), other=other.label())
+
+    def __sub__(self, other):
+        new_data = self._new()
+        new_data.label(self._combine_labels(other, template="{self} - {other}"))
+        if type(other) not in (list, tuple):
+            other = other.data
+        diff = [sample for sample in self.data if not sample in other]
+        new_data.data = diff
+        return new_data
+
+    def __isub__(self, other):
+        if type(other) not in (list, tuple):
+            other = other.data
+        self.data = [sample for sample in self.data if not sample in other]
+        return self
+
     def dependent_vars(self, *variables):
         """Sets or returns the dependent variables of the dataset.
         Use Data.depentend(None) to clear all dependent variables."""
