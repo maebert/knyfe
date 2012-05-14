@@ -51,7 +51,11 @@ class Data:
         self.data = []
         for source in sources:
             if type(source) in (str, unicode):
-                self.load(*glob.glob(source))
+                filenames = glob.glob(source)
+                if filenames:
+                    self.load(*filenames)
+                else:
+                    self.log.error("{} does not match any files".format(source))
             elif type(source) is dict:
                 self.data.append(source)
             elif type(source) in (list, tuple):
@@ -173,6 +177,7 @@ class Data:
         """Opens specified files and loads their data into self.data"""
         for filename in filenames:
             with open(filename) as data_file:
+                self.log.info("Loading {}...".format(filename))
                 self.data.extend(json.load(data_file))
 
     def save(self, filename):
@@ -443,7 +448,7 @@ class Data:
                 summary = "{min:.2f} - {max:.2f}"
                 notes = "Mean: {mean:.2f} +- {std:.2f}"
 
-            self.meta[attr]['missing'] = len(self) - len(values) - values.count(None))
+            self.meta[attr]['missing'] = len(self) - len(values) - values.count(None)
 
             # Construct a string representation of the meta info
             summary = summary.format(**self.meta[attr])
