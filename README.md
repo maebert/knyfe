@@ -77,23 +77,23 @@ At any time, you can print the `summary` of a data set to get a quick peek into 
 
 `attributes` will give you all attributes in a dataset:
 
-  >>> print people.attributes
-  set(['awesomeness', 'name'])
+    >>> print people.attributes
+    set(['awesomeness', 'name'])
 
 You can access the values of an attribute using the `get` method, or the shorthand `.`-notation:
 
-  >>> print people.get("awesomeness")
-  [ 1.3,  9.8]
-  >>> print people.awesomeness
-  [ 1.3,  9.8]
+    >>> print people.get("awesomeness")
+    [ 1.3,  9.8]
+    >>> print people.awesomeness
+    [ 1.3,  9.8]
 
 Note that while `get` works on any attribute, the dot-notation requires attributes to look like valid python variables. In any case, the values returned will be a `numpy`-array. Note that if there are samples with missing values, the returned array will be shorter than the data set itself. You can tell `get` to replace missing values, though:
 
     >>> people += {"name": "The Yeti"}
     >>> print people.get("awesomeness")
     [ 1.3,  9.8]
-   >>>  people.get("awesomeness", missing=NaN)
-   [ 1.3,  9.8, nan]
+    >>>  people.get("awesomeness", missing=NaN)
+    [ 1.3,  9.8, nan]
 
 Manipulating Data
 -----------------
@@ -194,17 +194,17 @@ In other words, a dataset shouldn't look like this: `PK\x03\x04\x14\x00\x00\x00\
 
 If you know Python, JSON will look very familiar: it translates to Python `dict` and `list` types almost directly. The only difference is that `None` in Python is `null` in JSON, and keys don't have to be strings. So a Dataset in JSON may look like this:
 
-  [
-    {
-      species: 'Elephant',
-      weight: 8014.2,
-      age: 31,
-      name: 'Dumbo'
-    },
-    {
-      species: 'Squirrel',
-      weight: 0.021,
-      age: .7,
-      name: null
-    }
-  ]
+    [
+      {
+        species: 'Elephant',
+        weight: 8014.2,
+        age: 31,
+        name: 'Dumbo'
+      },
+      {
+        species: 'Squirrel',
+        weight: 0.021,
+        age: .7,
+        name: null
+      }
+    ]
