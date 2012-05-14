@@ -3,7 +3,7 @@ What is knyfe?
 
 knyfe is a python utility for rapid exploration of datasets. Use it when you have some kind of dataset and you want to get a feel for how it is composed, run some simple tests on it, or prepare it for further processing. The great thing about knyfe is that you don't have to know much about how your dataset is designed. You shouldn't have to remember in which variable resides in which column of your data matrix or how your `structs` are nested. Just get shit done.
 
-![knyfe in an iPython shell](img/interactive.png)
+![knyfe in an iPython shell](http://maebert.github.com/knyfe/img/interactive.png)
 
 Quickstart
 ----------
@@ -36,11 +36,11 @@ knyfe is awesome on it's own, but it's really good friends with the [iPython](ht
     >>> print set(cereals.manufacturer)
     set(['Kelloggs', 'Nabisco', 'Ralston Purina', 'Quaker Oats', 'Post', 'General Mills'])
     >>> kellogs_products = cereals.filter(manufacturer="Kellogs")
-    >>> hist(kellogs_products)
+    >>> hist(kellogs_products.sugars)
 
-![Histogram of Kellogg's Cereals sugar](img/kellogs-sugar-hist.png)
+![Histogram of Kellogg's Cereals sugar](http://maebert.github.com/knyfe/img/kellogs-sugar-hist.png)
 
-    kellogs_products.export("kellogs.xls")
+    >>> kellogs_products.export("kellogs.xls")
 
 Loading Data
 ------------

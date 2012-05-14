@@ -54,7 +54,7 @@
 
 <p>knyfe is a python utility for rapid exploration of datasets. Use it when you have some kind of dataset and you want to get a feel for how it is composed, run some simple tests on it, or prepare it for further processing. The great thing about knyfe is that you don't have to know much about how your dataset is designed. You shouldn't have to remember in which variable resides in which column of your data matrix or how your <code>structs</code> are nested. Just get shit done.</p>
 
-<p><img src="img/interactive.png" alt="knyfe in an iPython shell" /></p>
+<p><img src="http://maebert.github.com/knyfe/img/interactive.png" alt="knyfe in an iPython shell" /></p>
 
 <h2>Quickstart</h2>
 
@@ -86,12 +86,12 @@ manufacturer : [Kelloggs, Nabis...]
 &gt;&gt;&gt; print set(cereals.manufacturer)
 set(['Kelloggs', 'Nabisco', 'Ralston Purina', 'Quaker Oats', 'Post', 'General Mills'])
 &gt;&gt;&gt; kellogs_products = cereals.filter(manufacturer="Kellogs")
-&gt;&gt;&gt; hist(kellogs_products)
+&gt;&gt;&gt; hist(kellogs_products.sugars)
 </code></pre>
 
-<p><img src="img/kellogs-sugar-hist.png" alt="Histogram of Kellogg's Cereals sugar" /></p>
+<p><img src="http://maebert.github.com/knyfe/img/kellogs-sugar-hist.png" alt="Histogram of Kellogg's Cereals sugar" /></p>
 
-<pre><code>kellogs_products.export("kellogs.xls")
+<pre><code>&gt;&gt;&gt; kellogs_products.export("kellogs.xls")
 </code></pre>
 
 <h2>Loading Data</h2>
