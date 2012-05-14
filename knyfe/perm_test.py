@@ -66,6 +66,78 @@ def random_combination(iterable, r, limit=None):
       yield tuple(pool[i] for i in indices)
 
 
+def _progress_bar(self, max=100, label=""):
+    class Progress:
+        def __init__(self, max=100, label=""):
+            self.value = 1
+            self.label = label
+            self.max = max
+
+        def set(self, value):
+            self.value = value
+            p50 = int(50.0 * value / self.max)
+            if value >= self.max:
+                self.clear()
+            else:
+                sys.stdout.write("\r" + "|"*p50 + "\033[30m" + "·"*(50-p50) + "\033[0m %02d%% %s" % (p50*2, self.label))
+                sys.stdout.flush()
+        def advance(self):
+            self.set(self.value + 1)
+
+        def clear(self):
+            sys.stdout.write("\r"+" "*(80 + len(self.label))+"\r")
+            sys.stdout.flush()
+    return Progress(max, label)
+
+
+def permutation_test(self, other, variables=None, ranked=False, two_samples=False, limit=1000):
+    """Performs a permutation test on the given or the default dependent variables.
+    If two_samples is True, will conduct a two-sample test. Otherwise a one-sample test will be conducted.
+    If ranked is True, a Wilcoxon / Wilcoxon-Mann-Whitney test will be used for the one-sample /
+    two-sample case, respectively. Otherwise a Fisher / Pitman test will be conducted."""        
+    variables = self._np1d(variables, fallback = self.dependent)
+
+    for var in variables:
+        A = self.get(var)
+        B = other.get(var)
+
+        if not two_samples:
+            D = [a - b for a, b in zip(A, B)]
+            if ranked:
+                D = self._signed_rank(D)
+            result = perm_test.one_sample(D, progress_bar = self._progress_bar(), limit=limit)
+        else:
+            if ranked:
+                D = self._rank(np.concatenate((A, B)))                   
+                A, B = D[:len(A)], D[len(A):]
+            result = perm_test.two_sample(A, B, progress_bar = self._progress_bar(), limit=limit)
+    return result
+
+
+
+def _signed_rank(self, values):
+    """Returns the signed rank of a list of values"""
+    lambda_signs = np.vectorize(lambda num: 1 if num >= 0 else -1)
+    signs = lambda_signs(values)
+    ranks = np.round(stats.rankdata(np.abs(values))).astype(int)
+    return signs*ranks
+
+def signed_rank(self, attribute):
+    """Returns the signed ranks of the data of the given attribute"""
+    values = self.get(attribute)
+    return self._signed_rank(values)
+
+def _rank(self, values):
+    """Returns the ranks of the data of a list of values"""
+    ranks = np.round(stats.rankdata(values)).astype(int)
+    return ranks
+
+def rank(self, attribute):
+    """Returns the ranks of the data of the given attribute"""
+    values = self.get(attribute)        
+    return self._rank(values)
+
+
 
 # def random_combination(iterable, r, limit=1000):
 #     """ Random selection from itertools.combinations(iterable, r). """    
