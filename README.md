@@ -36,11 +36,11 @@ knyfe is awesome on it's own, but it's really good friends with the [iPython](ht
     >>> print set(cereals.manufacturer)
     set(['Kelloggs', 'Nabisco', 'Ralston Purina', 'Quaker Oats', 'Post', 'General Mills'])
     >>> kellogs_products = cereals.filter(manufacturer="Kellogs")
-    >>> hist(kellogs_products)
+    >>> hist(kellogs_products.sugars)
 
 ![Histogram of Kellogg's Cereals sugar](http://maebert.github.com/knyfe/img/kellogs-sugar-hist.png)
 
-    kellogs_products.export("kellogs.xls")
+    >>> kellogs_products.export("kellogs.xls")
 
 Loading Data
 ------------
