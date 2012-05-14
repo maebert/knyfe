@@ -12,7 +12,7 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/knyfe.css" rel="stylesheet">
     <script src="http://yandex.st/highlightjs/6.2/highlight.min.js"></script>
-    <link rel="stylesheet" href="http://yandex.st/highlightjs/6.2/styles/solarized_light.min.css">
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/6.2/styles/github.min.css">
     <script>hljs.initHighlightingOnLoad();</script>
     <style>
       body {
@@ -131,43 +131,26 @@ name        : [Nikolai Tesla, ...]
 
 <p><code>attributes</code> will give you all attributes in a dataset:</p>
 
-<blockquote>
-  <blockquote>
-    <blockquote>
-      <p>print people.attributes
-        set(['awesomeness', 'name'])</p>
-    </blockquote>
-  </blockquote>
-</blockquote>
+<pre><code>&gt;&gt;&gt; print people.attributes
+set(['awesomeness', 'name'])
+</code></pre>
 
 <p>You can access the values of an attribute using the <code>get</code> method, or the shorthand <code>.</code>-notation:</p>
 
-<blockquote>
-  <blockquote>
-    <blockquote>
-      <p>print people.get("awesomeness")
-        [ 1.3,  9.8]
-      print people.awesomeness
-        [ 1.3,  9.8]</p>
-    </blockquote>
-  </blockquote>
-</blockquote>
+<pre><code>&gt;&gt;&gt; print people.get("awesomeness")
+[ 1.3,  9.8]
+&gt;&gt;&gt; print people.awesomeness
+[ 1.3,  9.8]
+</code></pre>
 
 <p>Note that while <code>get</code> works on any attribute, the dot-notation requires attributes to look like valid python variables. In any case, the values returned will be a <code>numpy</code>-array. Note that if there are samples with missing values, the returned array will be shorter than the data set itself. You can tell <code>get</code> to replace missing values, though:</p>
 
 <pre><code>&gt;&gt;&gt; people += {"name": "The Yeti"}
 &gt;&gt;&gt; print people.get("awesomeness")
 [ 1.3,  9.8]
+&gt;&gt;&gt;  people.get("awesomeness", missing=NaN)
+[ 1.3,  9.8, nan]
 </code></pre>
-
-<blockquote>
-  <blockquote>
-    <blockquote>
-      <p>people.get("awesomeness", missing=NaN)
-         [ 1.3,  9.8, nan]</p>
-    </blockquote>
-  </blockquote>
-</blockquote>
 
 <h2>Manipulating Data</h2>
 
@@ -281,20 +264,21 @@ name        : [Nikolai Tesla, ...]
 
 <p>If you know Python, JSON will look very familiar: it translates to Python <code>dict</code> and <code>list</code> types almost directly. The only difference is that <code>None</code> in Python is <code>null</code> in JSON, and keys don't have to be strings. So a Dataset in JSON may look like this:</p>
 
-<p>[
-    {
-      species: 'Elephant',
-      weight: 8014.2,
-      age: 31,
-      name: 'Dumbo'
-    },
-    {
-      species: 'Squirrel',
-      weight: 0.021,
-      age: .7,
-      name: null
-    }
-  ]</p>
+<pre><code>[
+  {
+    species: 'Elephant',
+    weight: 8014.2,
+    age: 31,
+    name: 'Dumbo'
+  },
+  {
+    species: 'Squirrel',
+    weight: 0.021,
+    age: .7,
+    name: null
+  }
+]
+</code></pre>
 
         </div> <!-- /span10 -->
 
