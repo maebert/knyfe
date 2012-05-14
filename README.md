@@ -1,61 +1,51 @@
-
-# What is knyfe?
+What is knyfe?
+==============
 
 knyfe is a python utility for rapid exploration of datasets. Use it when you have some kind of dataset and you want to get a feel for how it is composed, run some simple tests on it, or prepare it for further processing. The great thing about knyfe is that you don't have to know much about how your dataset is designed. You shouldn't have to remember in which variable resides in which column of your data matrix or how your structs are nested. Just get shit done.
 
-## Native Datasets: JSON
+Quickstart
+----------
+
+    cereals = knyfe.Data("examples/cereals.data")
+    print cereals.summary
+
+
+Native Datasets: JSON
+---------------------
 
 Natively, knyfe treats data like JSON objects, or, key value pairs. If you know what JSON is, skip this section.
 
-JSON knows essentially five kinds of stuff: 
+### Why JSON?
 
-* _Numbers_ (integer? float? who cares?), such as `42` and `1.618`
-* _Strings_, such as `'spam'` and `"eggs"`
-* _Arrays_ (or lists), such as `[23, 42, 3.14]` or `["pineapple", "lubricant"]` or `[17, "dwarves"]` (mixed data types? No problem!)
-* _Booleans_, as in `true` and `false`
-* _Objects_ (dict in Python), which are just `key: value`-pairs, such as `{name: 'luke', hands: 1, father: 'anakin'}`
+Any data format should be constructed after three principles:
 
-Ah, and then there is `null`, which is equivalent to `None` in Python, and just means that there's a value missing (intentionally or unintentionally). How to make a dataset out of this? For our purposes, it's just a list of objects. Like this:
+1. Human readable
+2. Explict (ie. self-contained)
+3. Flexible
+
+In other words, a dataset shouldn't look like this: `PK\x03\x04\x14\x00\x00\x00\x00\x00\xce\xad` and it also shouldn't look like `5.1,3.5,1.4,0.2;4.6,3.1,1.5,0.2`. Why? For two reasons:
+
+1. If other people want to use your data, the should know what they're dealing with.
+2. Human readable means anybody will be able to open the data set, now and in 50 years.
+
+### What does JSON look like?
+
+If you know Python, JSON will look very familiar: it translates to Python `dict` and `list` types almost directly. The only difference is that `None` in Python is `null` in JSON, and keys don't have to be strings. So a Dataset in JSON may look like this:
 
   [
     {
       species: 'Elephant',
       weight: 8014.2,
-      age: 31
+      age: 31,
+      name: 'Dumbo'
     },
     {
       species: 'Squirrel',
       weight: 0.021,
-      age: .7
+      age: .7,
+      name: null
     }
   ]
-
-
-A dataset is simply a list of data samples, and samples are nothing but
-key-value pairs, or dictionaries. This class is a wrapper that allows you
-to rapidly interact with these kind of data sets.
-
-Storing your datasets as lists of key-value pairs has the advantage that we
-can save them as JSON, or put them into a MongoDB. Let's assume we've got a
-JSON object in the file mydata.json that looks roughly like this:
-
-  [
-    
-    {
-      name: "Jeanne D'Arc",
-      gender: "female",
-      continent: "Europe",
-      age: 19
-    
-    },
-    {
-
-    }
-  ]
-
-- we can construct a Data object like this:
-
-  data = Data("mydata.json")
 
 Now let's play around a bit:
 

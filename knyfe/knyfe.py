@@ -388,7 +388,7 @@ class Data:
         for sample in self.data:
             for attr in sample:
                 self.scales[attr] = min(_guess_scale(sample[attr]), self.scales.get(attr, 99))
-
+                
 
     def _meta(self):
         """Compute meta information about our data, such as min, max, mean..."""
@@ -443,7 +443,7 @@ class Data:
                 summary = "{min:.2f} - {max:.2f}"
                 notes = "Mean: {mean:.2f} +- {std:.2f}"
 
-            self.meta[attr]['missing'] = len(self) - len(values) - values.count(None)
+            self.meta[attr]['missing'] = len(self) - len(values) - values.count(None))
 
             # Construct a string representation of the meta info
             summary = summary.format(**self.meta[attr])
