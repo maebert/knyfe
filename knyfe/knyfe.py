@@ -177,7 +177,7 @@ class Data:
         """Opens specified files and loads their data into self.data"""
         for filename in filenames:
             with open(filename) as data_file:
-                self.log.info("Loading {}...".format(filename))
+                self.log.info("Loading '{}'...".format(filename))
                 self.data.extend(json.load(data_file))
 
     def save(self, filename):
@@ -232,9 +232,13 @@ class Data:
         return "<%s (%d samples)>" % (self.label(), len(self))
 
 
-    def get(self, attribute):
+    def get(self, attribute, none_to_nan=True):
         """Gets all values of an attribute across all samples."""
-        return np.asarray([date[attribute] for date in self.data if attribute in date])
+        result = np.asarray([date[attribute] for date in self.data if attribute in date])
+        if none_to_nan:
+            return np.where(result == np.array(None), np.NaN, result)
+        else:
+            return result
 
 
     def get_once(self, attribute, check_unique = True):
@@ -381,7 +385,7 @@ class Data:
             elif type(value) in (tuple, list, np.ndarray):
                 return Data.ARRAY
             else:
-                return Data.UNKOWN
+                return Data.UNKNOWN
 
         # Algorithm: Run through each sample of dataset
         # Ad each attribute to our scale dict. The scale constants are ordered such
@@ -402,7 +406,7 @@ class Data:
         self.meta = {}
         # Now, go through data and compute some statistics, dependent on data type
         for attr in self.scales.keys():
-            values = [sample[attr] for sample in self.data if attr in sample]
+            values = [sample[attr] for sample in self.data if attr in sample and sample[attr] not in (np.NaN, None)]
             summary = ""
             notes = ""
             warnings = ""
@@ -448,7 +452,7 @@ class Data:
                 summary = "{min:.2f} - {max:.2f}"
                 notes = "Mean: {mean:.2f} +- {std:.2f}"
 
-            self.meta[attr]['missing'] = len(self) - len(values) - values.count(None)
+            self.meta[attr]['missing'] = len(self) - len(values)
 
             # Construct a string representation of the meta info
             summary = summary.format(**self.meta[attr])
