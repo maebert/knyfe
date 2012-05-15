@@ -121,7 +121,11 @@ will get all cereals with `shelf` being _either_ `2` or `3`, and
 
     >>> cereals.filter("sugars")
 
-will get all samples where the `sugars` attribute is present and does not evaluate to `False` (ie. is not `NaN` or `0`). More complex stuff can be done with functions like this:
+will get all samples where the `sugars` attribute is present and does not evaluate to `False` (ie. is not `NaN` or `0`). You can also filter by an array of booleans, which is very handy for situations like this:
+
+    >>> cereals.filter(cereals.calories > 60)
+
+Note that in this case `cereals.calories` must not have any missing values, because then `cereals.calories > 60` would be shorter than data itself. In such a case, you can use `cereals.get("calories", missing=NaN) > 60` (samples with `calories` missing  will not be part of the filtered dataset this way.) But you can also use any arbitrary filter like this:
 
     >>> cereals.filter(lambda c: 12.0 <= c['sugars'] < 15.0)
 
