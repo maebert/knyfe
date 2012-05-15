@@ -232,13 +232,13 @@ class Data:
         return "<%s (%d samples)>" % (self.label(), len(self))
 
 
-    def get(self, attribute, none_to_nan=True):
-        """Gets all values of an attribute across all samples."""
-        result = np.asarray([date[attribute] for date in self.data if attribute in date])
-        if none_to_nan:
-            return np.where(result == np.array(None), np.NaN, result)
+    def get(self, attribute, missing=False):
+        """Gets all values of an attribute across all samples.
+        If missing is not False, missing values will be replaced by the value of missing."""
+        if missing is False:
+            return np.asarray([date[attribute] for date in self.data if attribute in date])
         else:
-            return result
+            return np.asarray([date[attribute] if attribute in date else missing for date in self.data ])
 
 
     def get_once(self, attribute, check_unique = True):
