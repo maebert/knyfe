@@ -22,7 +22,7 @@ import glob
 import tablib
 
 __title__ = 'knyfe'
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 __author__ = 'Manuel Ebert'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2011-2012 Manuel Ebert'
