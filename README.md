@@ -59,7 +59,7 @@ So any of these will work:
     bruce = knyfe.Data({"name": "Bruce Schneier", "awesomeness": 8.7})
     people = knyfe.Data([
       {"name": "Justin Bieber", "awesomeness": 1.3}, 
-      {"name": "Nikolai Tesla", "awesomeness": 9.8}
+      {"name": "Nikola Tesla", "awesomeness": 9.8}
     ])
     copy_of_singleton = knyfe.Data(singleton)
 
@@ -72,7 +72,7 @@ At any time, you can print the `summary` of a data set to get a quick peek into 
     Unnamed Dataset (2 samples)
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''
     awesomeness : 1.30 - 9.80          Mean: 5.55 +- 4.25     
-    name        : [Nikolai Tesla, ...]                        
+    name        : [Nikola Tesla, ...]                        
     ======================================================
 
 `attributes` will give you all attributes in a dataset:
