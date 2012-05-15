@@ -31,7 +31,7 @@ class Data:
     """A generic data manager for exploring generic datasets."""
     logging.basicConfig(format="%(levelname)-7s %(asctime)s:  %(message)s", level=logging.INFO)
     log = logging.getLogger("Data Analysis")
-    
+
     # Define some scales
     NOMINAL = 0     # For Strings and Booleans
     ORDINAL = 1     # For Integers
@@ -231,11 +231,11 @@ class Data:
     def __repr__(self):
         return "<%s (%d samples)>" % (self.label(), len(self))
 
-
-    def get(self, attribute, missing=False):
+    __default = object()
+    def get(self, attribute, missing=__default):
         """Gets all values of an attribute across all samples.
-        If missing is not False, missing values will be replaced by the value of missing."""
-        if missing is False:
+        If missing is set, missing values will be replaced by the value of missing."""
+        if missing is Data.__default:
             return np.asarray([date[attribute] for date in self.data if attribute in date])
         else:
             return np.asarray([date[attribute] if attribute in date else missing for date in self.data ])
