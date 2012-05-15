@@ -181,7 +181,12 @@ set(['awesomeness', 'name'])
 <pre><code>&gt;&gt;&gt; cereals.filter("sugars")
 </code></pre>
 
-<p>will get all samples where the <code>sugars</code> attribute is present and does not evaluate to <code>False</code> (ie. is not <code>NaN</code> or <code>0</code>). More complex stuff can be done with functions like this:</p>
+<p>will get all samples where the <code>sugars</code> attribute is present and does not evaluate to <code>False</code> (ie. is not <code>NaN</code> or <code>0</code>). You can also filter by an array of booleans, which is very handy for situations like this:</p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(cereals.calories &gt; 60)
+</code></pre>
+
+<p>Note that in this case <code>cereals.calories</code> must not have any missing values, because then <code>cereals.calories &gt; 60</code> would be shorter than data itself. In such a case, you can use <code>cereals.get("calories", missing=NaN) &gt; 60</code> (samples with <code>calories</code> missing  will not be part of the filtered dataset this way.) But you can also use any arbitrary filter like this:</p>
 
 <pre><code>&gt;&gt;&gt; cereals.filter(lambda c: 12.0 &lt;= c['sugars'] &lt; 15.0)
 </code></pre>
