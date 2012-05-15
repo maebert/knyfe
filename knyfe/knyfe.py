@@ -159,12 +159,24 @@ class Data:
         return np.asarray(anything)
 
 
-    def map(self, attribute, new_attribute, function):
+    def add_attribute(self, attribute, values):
+        """Adds a new attribute with given values, eg.
+        mydata.add_attribute('distance', mydata.finish - mydata.start )"""
+        if len(values) != len(self):
+            self.log.error("Length of values must match length of dataset!")
+            return self
+        values = values.tolist()
+        for index, s in enumerate(self.data):
+            s[attribute] = values[index]
+        return self
+
+    def map(self, new_attribute, function):
         """Creates a new attribute in each sample by mapping an existing one using the given function. 
-        knyfe.map('age', 'life_expectancy', lambda age: 82 - age)
+        mydata.map('life_expectancy', lambda s: 82 - s['age'])
         Will create an attribute 'life_expectancy' in each sample of the dataset."""
         for sample in self.data:
-            sample[new_attribute] = function(sample[old_attribute])
+            sample[new_attribute] = function(sample)
+        return self
 
     def extend(self, other_data):
         """Appends a different Data object or list of data samples to self.data"""
@@ -414,8 +426,7 @@ class Data:
 
     def _meta(self):
         """Compute meta information about our data, such as min, max, mean..."""
-        if not hasattr(self, 'scales'):
-            self._scales()
+        self._scales()
         self.meta = {}
         # Now, go through data and compute some statistics, dependent on data type
         for attr in self.scales.keys():
