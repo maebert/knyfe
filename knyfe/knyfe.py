@@ -284,7 +284,7 @@ class Data:
         self.log.setLevel(logging.DEBUG if verbose else logging.WARNING)
 
 
-    def filter(self, _func=None, **kwargs):
+    def filter(self, _func=__default, **kwargs):
         """Returns a Data object with only the data that matches the filter.
 
             data.filter(subject=8)
@@ -311,11 +311,18 @@ class Data:
         will keep data that looks like {'light': True} or {'light': 'on'}, but not
         {'light': 0} or {'LIGHT': True}.
 
+        If the first argument is an boolean array, it will be used to select samples:
+
+            data.filter(data.age > 18)
+
+        Note that in this case data.age must not have any missing values, because then
+        `data.age > 18` will be shorter than data itself. 
+
         Alternatively, a function may be given to implement more complex filters:
 
-            data.filter(lambda d: d['subject'] > 3)
+            data.filter(lambda d: d['age'] > 18)
 
-        Will return all data where the subject key is greater than 3."""
+        Will return all data where the age key is greater than 18."""
         def _all(boollist):
             return reduce(lambda b1, b2: b1 and b2, boollist)
         def _condition(c, v):
@@ -324,10 +331,16 @@ class Data:
             else:
                 return lambda data: c in data and data[c] == v
 
-        if _func and callable(_func):
+        if _func is not None and callable(_func):
             return self._new([trial for trial in self.data if _func(trial)]).filter(**kwargs)
-        elif _func and type(_func) is str:
+        elif _func is not None and type(_func) is str:
             return self.filter(lambda trial: trial.has_key(_func) and trial[_func], **kwargs)
+        elif _func is not None and type(_func) is np.ndarray and _func.dtype is np.dtype('bool'):
+            if len(_func) != len(self):
+                self.log.error("Length of boolean filter does not match length of dataset. Missing values? Use filter(Data.get('attribute', missing=NaN)) instead.")
+                return self.filter(**kwargs)
+            else:
+                return self._new([trial for index, trial in enumerate(self.data) if _func[index]]).filter(**kwargs)
         elif kwargs:           
             conditions = [_condition(c, v) for c, v in kwargs.iteritems()]
             return self.filter(lambda trial: _all([c(trial) for c in conditions]))
