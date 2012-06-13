@@ -20,9 +20,10 @@ import random
 import copy
 import glob
 import tablib
+import csv
 
 __title__ = 'knyfe'
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 __author__ = 'Manuel Ebert'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2011-2012 Manuel Ebert'
@@ -70,6 +71,18 @@ class Data:
 
         self.str_label = "Unnamed Dataset"
         self.dependent = self._np1d([])
+
+        """Tries to convert n into an int or float, returns n if that fails."""
+    def _num(self, n):
+        """Tries to convert n into an int or float, returns n if that fails."""
+        try:
+            return int(n)
+        except ValueError:
+            pass
+        try:
+            return float(n)
+        except ValueError:
+            return n
 
 
     def _new(self, data=[]):
@@ -184,6 +197,15 @@ class Data:
             self.data.extend(other_data)
         elif hasattr(other_data, 'data'):
             self.data.extend(other_data.data)
+
+    def import_csv(self, filename, delimiter=',', quotechar='"'):
+        """Imports an CSV files. First row must be a header row!"""
+        with open(filename) as data_file:
+            reader = csv.reader(data_file, delimiter=delimiter, quotechar=quotechar)
+            header = [h.strip() for h in reader.next()]
+            for row in reader:
+                self.data.append({k: self._num(v) for k, v in zip(header, row)})
+
 
     def load(self, *filenames):
         """Opens specified files and loads their data into self.data"""
