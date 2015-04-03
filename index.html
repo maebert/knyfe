@@ -50,6 +50,240 @@
         </div>
         <div class="span10 content">
         
+<h1>What is knyfe?</h1>
+
+<p>knyfe is a python utility for rapid exploration of datasets. Use it when you have some kind of dataset and you want to get a feel for how it is composed, run some simple tests on it, or prepare it for further processing. The great thing about knyfe is that you don't have to know much about how your dataset is designed. You shouldn't have to remember in which variable resides in which column of your data matrix or how your <code>structs</code> are nested. Just get shit done.</p>
+
+<p><img src="http://maebert.github.com/knyfe/img/interactive.png" alt="knyfe in an iPython shell" /></p>
+
+<h2>Quickstart</h2>
+
+<p>knyfe is awesome on it's own, but it's really good friends with the <a href="http://ipython.org/">iPython</a> console. Just fire it up with <code>ipython qtconsole --pylab=inline</code> and get rockin':</p>
+
+<pre><code>&gt;&gt;&gt; cereals = knyfe.Data("examples/cereals.json")
+&gt;&gt;&gt; print cereals.summary
+
+Unnamed Dataset (75 samples)
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+rating       : 18.04 - 93.70         Mean: 42.59 +- 14.05   
+potass       : 15.00 - 330.00        Mean: 99.25 +- 70.74   (missing in 2 samples)
+fiber        : 0.00 - 320.00         Mean: 161.27 +- 82.20  
+vitamins     : 0.00 - 100.00         Mean: 28.33 +- 22.48   
+name         : [Mueslix Crispy ...]                         
+weight       : 0.50 - 1.50           Mean: 1.03 +- 0.15     
+sodium       : 0.00 - 5.00           Mean: 1.01 +- 1.01     
+shelf        : 1 - 3                                        
+sugars       : 5.00 - 23.00          Mean: 14.77 +- 3.93    (missing in 1 samples)
+calories     : 50 - 160                                     
+fat          : 1.00 - 6.00           Mean: 2.53 +- 1.09     
+protein      : 1.00 - 6.00           Mean: 2.53 +- 1.09     
+cups         : 0.25 - 1.50           Mean: 0.82 +- 0.23     
+type         : [cold, hot]                                  
+carbo        : 0.00 - 14.00          Mean: 2.20 +- 2.38     
+manufacturer : [Kelloggs, Nabis...]                         
+==================================================================================
+
+&gt;&gt;&gt; print set(cereals.manufacturer)
+set(['Kelloggs', 'Nabisco', 'Ralston Purina', 'Quaker Oats', 'Post', 'General Mills'])
+&gt;&gt;&gt; kellogs_products = cereals.filter(manufacturer="Kellogs")
+&gt;&gt;&gt; hist(kellogs_products.sugars)
+</code></pre>
+
+<p><img src="http://maebert.github.com/knyfe/img/kellogs-sugar-hist.png" alt="Histogram of Kellogg's Cereals sugar" /></p>
+
+<pre><code>&gt;&gt;&gt; kellogs_products.export("kellogs.xls")
+</code></pre>
+
+<h2>Loading Data</h2>
+
+<p>Data objects can be created using</p>
+
+<ul>
+<li>Strings, interpreted as paths to JSON files</li>
+<li>dictionaries, interpreted as single samples</li>
+<li>lists of dictionaries</li>
+<li>other Data instances</li>
+</ul>
+
+<p>So any of these will work:</p>
+
+<pre><code>cereals = knyfe.Data("examples/cereals.json")
+all_examples = knyfe.Data("examples/*.json")
+bruce = knyfe.Data({"name": "Bruce Schneier", "awesomeness": 8.7})
+people = knyfe.Data([
+  {"name": "Justin Bieber", "awesomeness": 1.3}, 
+  {"name": "Nikola Tesla", "awesomeness": 9.8}
+])
+copy_of_singleton = knyfe.Data(singleton)
+</code></pre>
+
+<h2>Exploring Data</h2>
+
+<p>At any time, you can print the <code>summary</code> of a data set to get a quick peek into what's inside:</p>
+
+<pre><code>&gt;&gt;&gt; print people.summary
+Unnamed Dataset (2 samples)
+''''''''''''''''''''''''''''''''''''''''''''''''''''''
+awesomeness : 1.30 - 9.80          Mean: 5.55 +- 4.25     
+name        : [Nikola Tesla, ...]                        
+======================================================
+</code></pre>
+
+<p><code>attributes</code> will give you all attributes in a dataset:</p>
+
+<pre><code>&gt;&gt;&gt; print people.attributes
+set(['awesomeness', 'name'])
+</code></pre>
+
+<p>You can access the values of an attribute using the <code>get</code> method, or the shorthand <code>.</code>-notation:</p>
+
+<pre><code>&gt;&gt;&gt; print people.get("awesomeness")
+[ 1.3,  9.8]
+&gt;&gt;&gt; print people.awesomeness
+[ 1.3,  9.8]
+</code></pre>
+
+<p>Note that while <code>get</code> works on any attribute, the dot-notation requires attributes to look like valid python variables. In any case, the values returned will be a <code>numpy</code>-array. Note that if there are samples with missing values, the returned array will be shorter than the data set itself. You can tell <code>get</code> to replace missing values, though:</p>
+
+<pre><code>&gt;&gt;&gt; people += {"name": "The Yeti"}
+&gt;&gt;&gt; print people.get("awesomeness")
+[ 1.3,  9.8]
+&gt;&gt;&gt;  people.get("awesomeness", missing=NaN)
+[ 1.3,  9.8, nan]
+</code></pre>
+
+<h2>Manipulating Data</h2>
+
+<h3>Adding Data, Unions and Differences</h3>
+
+<p>The <code>+</code> and <code>-</code> operators work as expected:</p>
+
+<pre><code>&gt;&gt;&gt; yeti = {"name": "The Yeti"}
+&gt;&gt;&gt; people += yeti                   # Adds 1 sample to people (now 3)
+&gt;&gt;&gt; more_people = people + bruce     # Creates new Dataset with 4 samples
+&gt;&gt;&gt; real_people = more_people - yeti # Creates new Dataset with Bruce, Nikoalai and Justin
+</code></pre>
+
+<h3>Filtering</h3>
+
+<p>But the real awesomeness happens in <code>filter</code>. Back to our cereals:</p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(manufacturer="Kellogs")
+</code></pre>
+
+<p>Will return a data set with only those samples from <code>cereals</code> where <code>manufacturer</code> is <code>Kellogs</code>. </p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(shelf=(2,3))
+</code></pre>
+
+<p>will get all cereals with <code>shelf</code> being <em>either</em> <code>2</code> or <code>3</code>, and </p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter("sugars")
+</code></pre>
+
+<p>will get all samples where the <code>sugars</code> attribute is present and does not evaluate to <code>False</code> (ie. is not <code>NaN</code> or <code>0</code>). You can also filter by an array of booleans, which is very handy for situations like this:</p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(cereals.calories &gt; 60)
+</code></pre>
+
+<p>Note that in this case <code>cereals.calories</code> must not have any missing values, because then <code>cereals.calories &gt; 60</code> would be shorter than data itself. In such a case, you can use <code>cereals.get("calories", missing=NaN) &gt; 60</code> (samples with <code>calories</code> missing  will not be part of the filtered dataset this way.) But you can also use any arbitrary filter like this:</p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(lambda c: 12.0 &lt;= c['sugars'] &lt; 15.0)
+</code></pre>
+
+<p>gets all the cereals that have between 12 and 15 grams of sugar.</p>
+
+<h3>Daisy-chaining</h3>
+
+<p>Since <code>filter</code> returns a new data set, you can also chain methods:</p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(manufacturer="Kellogs").filter(shelf=(2,3))
+</code></pre>
+
+<p>Of course, you can also write </p>
+
+<pre><code>&gt;&gt;&gt; cereals.filter(manufacturer="Kellogs", shelf=(2,3))
+</code></pre>
+
+<p>and get the same effect - but chaining methods allows you to do a few other operations in a single line.</p>
+
+<h3>Other functions:</h3>
+
+<ul>
+<li><code>map</code></li>
+<li><code>median_split</code></li>
+<li><code>toggle_verbose</code></li>
+<li><code>remove_outliers</code></li>
+<li><code>label</code></li>
+<li><code>dependent_vars</code></li>
+</ul>
+
+<h2>Saving and Exporting</h2>
+
+<p>Saving to json is as easy as</p>
+
+<pre><code>cereals.save("new_dataset.json")
+</code></pre>
+
+<p>But exporting is just as swift:</p>
+
+<pre><code>cereals.save("excel_worksheet.xlsx")
+</code></pre>
+
+<p>knyfe will guess the format by the extension. </p>
+
+<h3>Formats</h3>
+
+<p>Currently following formats are supported.</p>
+
+<ul>
+<li><code>csv</code> for comma separated value</li>
+<li><code>xlsx</code> for Excel 07 or newer</li>
+<li><code>xls</code> for legacy Excel</li>
+<li><code>ods</code> for open document spreadsheet</li>
+<li><code>html</code> for an html file</li>
+</ul>
+
+<h2>Native Datasets: JSON</h2>
+
+<p>Natively, knyfe treats data like JSON objects, or, key value pairs. If you know what JSON is, skip this section.</p>
+
+<h3>Why JSON?</h3>
+
+<p>Any data format should be constructed after three principles:</p>
+
+<ol>
+<li>Human readable</li>
+<li>Explict (ie. self-contained)</li>
+<li>Flexible</li>
+</ol>
+
+<p>In other words, a dataset shouldn't look like this: <code>PK\x03\x04\x14\x00\x00\x00\x00\x00\xce\xad</code> and it also shouldn't look like <code>5.1,3.5,1.4,0.2;4.6,3.1,1.5,0.2</code>. Why? For two reasons:</p>
+
+<ol>
+<li>If other people want to use your data, the should know what they're dealing with.</li>
+<li>Human readable means anybody will be able to open the data set, now and in 50 years.</li>
+</ol>
+
+<h3>What does JSON look like?</h3>
+
+<p>If you know Python, JSON will look very familiar: it translates to Python <code>dict</code> and <code>list</code> types almost directly. The only difference is that <code>None</code> in Python is <code>null</code> in JSON, and keys don't have to be strings. So a Dataset in JSON may look like this:</p>
+
+<pre><code>[
+  {
+    species: 'Elephant',
+    weight: 8014.2,
+    age: 31,
+    name: 'Dumbo'
+  },
+  {
+    species: 'Squirrel',
+    weight: 0.021,
+    age: .7,
+    name: null
+  }
+]
+</code></pre>
 
         </div> <!-- /span10 -->
 
